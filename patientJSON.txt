@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV 轉 JSON</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%; /* 擴大容器寬度 */
+            max-width: 800px; /* 設置最大寬度 */
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .submit-btn, .upload-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .submit-btn:hover, .upload-btn:hover {
+            background-color: #45a049;
+        }
+        pre {
+            background-color: #eee;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 20px;
+            overflow: auto; /* 增加捲動條 */
+            white-space: pre-wrap; /* 自動換行 */
+            max-height: 400px; /* 設置最大高度，增加捲動條 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>上傳 CSV 檔案並轉換成 JSON</h2>
+        <input type="file" id="csvFileInput" accept=".csv">
+        <button type="button" class="submit-btn" onclick="convertCSVToJSON()">轉換</button>
+        <button type="button" class="upload-btn" onclick="uploadJSON()">上傳 JSON</button>
+        <pre id="jsonOutput"></pre>
+    </div>
+
+    <script>
+        let jsonOutput = [];
+
+        function convertCSVToJSON() {
+            const fileInput = document.getElementById('csvFileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('請選擇一個 CSV 檔案');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const csvText = event.target.result;
+                const json = csvToJson(csvText);
+                jsonOutput = json;
+                document.getElementById('jsonOutput').textContent = JSON.stringify(json, null, 2);
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function csvToJson(csv) {
+            const lines = csv.split('\n');
+            const headers = lines[0].split(',');
+
+            const result = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i]) continue; // Skip empty lines
+
+                const currentline = lines[i].split(',');
+
+                const obj = {
+                    "resourceType": "Patient",
+                    "name": [{ "text": currentline[0].trim() }],
+                    "birthDate": currentline[1].trim(),
+                    "gender": currentline[2].trim(),
+                    "identifier": [{
+                        "use": "official",
+                        "system": "http://hl7.org/fhir/sid/us-ssn",
+                        "value": currentline[3].trim()
+                    }],
+                    "managingOrganization": {
+                        "reference": "Organization/98a6f5c5-af58-41b5-bd6f-d8ca996b5580"
+                    }
+                };
+
+                result.push(obj);
+            }
+
+            return result;
+        }
+
+        function uploadJSON() {
+            const url = 'https://fhir.tcumi.com:58443/r5/fhir/Patient';
+
+            jsonOutput.forEach(patient => {
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(patient)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('成功上傳 JSON 資料');
+                    alert(JSON.stringify(data, null, 2));
+                })
+            });
+        }
+    </script>
+</body>
+</html>

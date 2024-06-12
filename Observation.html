@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生理監測表單</title>
+    <script src="setting.js"></script>
+    <script src="HTTPlink.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right bottom, #FFA07A, #FF6347);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/food.png');
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<script>
+    var obj={
+  "resourceType": "Observation",
+  "status": "final",
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+          "code": "vital-signs",
+          "display": "Vital Signs"
+        }
+      ],
+      "text": "Vital Signs"
+    }
+  ],
+  "code": {
+    "coding": [
+      {
+        "system": "http://loinc.org",
+        "code": "85354-9",
+        "display": "Blood pressure panel with all children optional"
+      }
+    ],
+    "text": "Blood Pressure and Heart Rate"
+  },
+  "subject": {
+    "reference": "Patient/1111"
+  },
+  "effectiveDateTime": "2024-06-02T14:00:00Z",
+  "component": [
+    {
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "8480-6",
+            "display": "Systolic blood pressure"
+          }
+        ],
+        "text": "Systolic Blood Pressure"
+      },
+      "valueQuantity": {
+        "value": 120,
+        "unit": "mmHg",
+        "system": "http://unitsofmeasure.org",
+        "code": "mm[Hg]"
+      }
+    },
+    {
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "8462-4",
+            "display": "Diastolic blood pressure"
+          }
+        ],
+        "text": "Diastolic Blood Pressure"
+      },
+      "valueQuantity": {
+        "value": 80,
+        "unit": "mmHg",
+        "system": "http://unitsofmeasure.org",
+        "code": "mm[Hg]"
+      }
+    },
+    {
+      "code": {
+        "coding": [
+          {
+            "system": "http://loinc.org",
+            "code": "8867-4",
+            "display": "Heart rate"
+          }
+        ],
+        "text": "Heart Rate"
+      },
+      "valueQuantity": {
+        "value": 72,
+        "unit": "beats/minute",
+        "system": "http://unitsofmeasure.org",
+        "code": "/min"
+      }
+    }
+  ]
+};
+function getCurrentDate() {
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+function sent(){
+    obj.effectiveDateTime= getCurrentDate();
+    obj.subject.reference =   "Patient/"  +  document.getElementById("patient-id").value; 
+    obj.component[0].valueQuantity=document.getElementById("systolic").value;
+    obj.component[1].valueQuantity=document.getElementById("diastolic").value;
+    obj.component[2].valueQuantity=document.getElementById("heart-rate").value;
+
+    var jsonStr = JSON.stringify(obj);
+    alert(jsonStr);
+
+    var apiURL;
+    apiURL = FHIRrootURL + '/' + "Observation";
+    HTTPPostData(apiURL, jsonStr);
+}
+
+</script>
+<body>
+    <div class="container">
+        <h2>生理監測表單</h2>
+            <label for="patient-id">病人ID</label>
+            <input type="text" id="patient-id" name="patient-id" required>
+
+            <label for="systolic">收縮壓 (mmHg)</label>
+            <input type="number" id="systolic" name="systolic" required>
+
+            <label for="diastolic">舒張壓 (mmHg)</label>
+            <input type="number" id="diastolic" name="diastolic" required>
+
+            <label for="heart-rate">心率 (bpm)</label>
+            <input type="number" id="heart-rate" name="heart-rate" required>
+
+            <button type="submit" class="submit-btn" onclick="sent()">提交</button>
+    </div>
+</body>
+</html>

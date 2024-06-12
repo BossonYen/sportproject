@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV 轉 JSON</title>
+</head>
+<body>
+    <h2>上傳 CSV 檔案並轉換成 JSON</h2>
+    <input type="file" id="csvFileInput" accept=".csv">
+    <button type="button" onclick="convertCSVToJSON()">轉換</button>
+    <pre id="jsonOutput"></pre>
+
+    <script>
+        function convertCSVToJSON() {
+            const fileInput = document.getElementById('csvFileInput');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('請選擇一個 CSV 檔案');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const csvText = event.target.result;
+                const json = csvToJson(csvText);
+                document.getElementById('jsonOutput').textContent = JSON.stringify(json, null, 2);
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function csvToJson(csv) {
+            const lines = csv.split('\n');
+            const result = [];
+            const headers = lines[0].split(',');
+
+            for (let i = 1; i < lines.length; i++) {
+                const obj = {};
+                const currentline = lines[i].split(',');
+
+                for (let j = 0; j < headers.length; j++) {
+                    obj[headers[j].trim()] = currentline[j].trim();
+                }
+
+                result.push(obj);
+            }
+
+            return result;
+        }
+    </script>
+</body>
+</html>
