@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>生理監測資料填寫表單</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+        .download-btn {
+            background-color: #008CBA;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .download-btn:hover {
+            background-color: #007B9E;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>生理監測資料填寫表單</h2>
+            <label for="patientId">病人ID</label>
+            <input type="text" id="patientId" name="patientId" required>
+
+            <label for="systolic">收縮壓</label>
+            <input type="number" id="systolic" name="systolic" required>
+
+            <label for="diastolic">舒張壓</label>
+            <input type="number" id="diastolic" name="diastolic" required>
+
+            <label for="heartRate">心率</label>
+            <input type="number" id="heartRate" name="heartRate" required>
+
+            <button type="button" class="submit-btn" onclick="addData()">提交</button>
+            <button type="button" class="download-btn" onclick="downloadCSV()">下載 CSV</button>
+    </div>
+
+    <script>
+        let data = [];
+
+        function addData() {
+            const patientId = document.getElementById('patientId').value;
+            const systolic = document.getElementById('systolic').value;
+            const diastolic = document.getElementById('diastolic').value;
+            const heartRate = document.getElementById('heartRate').value;
+
+            data.push({
+                patientId: patientId,
+                systolic: systolic,
+                diastolic: diastolic,
+                heartRate: heartRate
+            });
+
+            alert("填寫成功");
+            // Clear the form for the next entry
+            document.getElementById('patientId').value = '';
+            document.getElementById('systolic').value = '';
+            document.getElementById('diastolic').value = '';
+            document.getElementById('heartRate').value = '';
+        }
+
+        function downloadCSV() {
+            if (data.length === 0) {
+                alert('沒有可下載的資料');
+                return;
+            }
+
+            let csvContent = '病人ID,收縮壓,舒張壓,心率\n';
+            data.forEach(row => {
+                csvContent += `${row.patientId},${row.systolic},${row.diastolic},${row.heartRate}\n`;
+            });
+
+            // 添加 BOM 以確保使用 UTF-8 編碼
+            const bom = '\uFEFF';
+            const csvBlob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            // 建立下載連結
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(csvBlob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'monitoring_data.csv');
+            link.style.visibility = 'hidden';
+
+            // 附加到文件並觸發下載
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
